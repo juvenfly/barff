@@ -4,8 +4,6 @@ import pandas as pd
 
 from maps import PANDAS_TO_ARFF
 
-arff_comments = [['% This is a comment'], ['% This is also a comment'], ['%']]
-
 
 class ArffConverter(object):
     def __init__(self):
@@ -15,37 +13,37 @@ class ArffConverter(object):
     def main(self):
         data_frame = pd.read_csv('./tests/test_input.csv')
         output_file = open('./tmp/output.arff', 'w+')
-        writer = csv.writer(output_file, delimiter=',', quotechar='', escapechar='\\', quoting=csv.QUOTE_NONE)
+        self.writer = csv.writer(output_file, delimiter=',', quotechar='', escapechar='\\', quoting=csv.QUOTE_NONE)
 
         self.collect_comments()
 
-        for comment in arff_comments:
-            writer.writerow(comment)
-
-        writer.writerow(['@RELATION "test_relation"'])
-        writer.writerow([])
+        self.writer.writerow(['@RELATION "test_relation"'])
+        self.writer.writerow([])
 
         arff_header = self.convert_header(data_frame)
 
         for line in arff_header:
-            writer.writerow(line)
+            self.writer.writerow(line)
 
-        writer.writerow([])
-        writer.writerow(['@DATA'])
+        self.writer.writerow([])
+        self.writer.writerow(['@DATA'])
 
         for row in self.arff_rows(data_frame):
-            writer.writerow(row)
+            self.writer.writerow(row)
 
         output_file.close()
 
     def collect_comments(self):
         line_number = 0
         while True:
+            line_number += 1
             comment = raw_input("Please input comment line {} or 'X' to continue: ".format(line_number))
             if comment.lower() in ['x', "'x'"]:
                 break
             comment = ['% {}'.format(comment)]
-            print comment
+            self.writer.writerow(comment)
+
+        self.writer.writerow(['%'])
 
     def convert_header(self, data_frame):
         """
@@ -65,7 +63,6 @@ class ArffConverter(object):
             line = ['@ATTRIBUTE {} {}'.format(attribute_name, arff_dtype)]
             arff_header.append(line)
 
-        print arff_header
         return arff_header
 
     def map_data_types(self, pd_dtype, data_frame, column):
