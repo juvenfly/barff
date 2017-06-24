@@ -86,7 +86,6 @@ class ArffConverter(object):
         :return: arff class format
         """
         unique_vals = [str(val) for val in self.data_frame[column].unique() if not isinstance(val, str) or val]
-        print unique_vals
         result = '{' + ','.join(unique_vals) + '}'
 
         return result
