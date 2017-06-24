@@ -107,4 +107,4 @@ ENV/
 .DS_Store
 
 # temporary files
-temp/
+tmp/
