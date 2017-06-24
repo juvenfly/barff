@@ -37,5 +37,3 @@ class TestOutputFile(TestCase):
         for csv_line in self.csv_file:
             arff_line = self.actual_arff_file.readline()
             self.assertEqual(csv_line, arff_line)
-
-
