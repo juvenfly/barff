@@ -34,6 +34,9 @@ class ArffConverter(object):
         output_file.close()
 
     def collect_comments(self):
+        """
+        Collects comments from the command line and writes them to the output file.
+        """
         line_number = 0
         while True:
             line_number += 1
