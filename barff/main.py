@@ -11,7 +11,7 @@ class ArffConverter(object):
         self.writer = None
 
     def main(self):
-        data_frame = pd.read_csv('./tests/test_input.csv')
+        self.data_frame = pd.read_csv('./tests/test_input.csv')
         output_file = open('./tmp/output.arff', 'w+')
         self.writer = csv.writer(output_file, delimiter=',', quotechar='', escapechar='\\', quoting=csv.QUOTE_NONE)
 
@@ -20,7 +20,7 @@ class ArffConverter(object):
         self.writer.writerow(['@RELATION "test_relation"'])
         self.writer.writerow([])
 
-        arff_header = self.convert_header(data_frame)
+        arff_header = self.convert_header()
 
         for line in arff_header:
             self.writer.writerow(line)
@@ -28,7 +28,7 @@ class ArffConverter(object):
         self.writer.writerow([])
         self.writer.writerow(['@DATA'])
 
-        for row in self.arff_rows(data_frame):
+        for row in self.arff_rows():
             self.writer.writerow(row)
 
         output_file.close()
@@ -45,7 +45,7 @@ class ArffConverter(object):
 
         self.writer.writerow(['%'])
 
-    def convert_header(self, data_frame):
+    def convert_header(self):
         """
         Converts header from data_frame to arff
         :param data_frame: pandas data_frame
@@ -54,18 +54,18 @@ class ArffConverter(object):
         """
         arff_header = []
 
-        for column in data_frame.columns:
+        for column in self.data_frame.columns:
             attribute_name = column
-            pd_dtype = str(data_frame[attribute_name].dtype)
+            pd_dtype = str(self.data_frame[attribute_name].dtype)
 
-            arff_dtype = self.map_data_types(pd_dtype, data_frame, column)
+            arff_dtype = self.map_data_types(pd_dtype, column)
 
             line = ['@ATTRIBUTE {} {}'.format(attribute_name, arff_dtype)]
             arff_header.append(line)
 
         return arff_header
 
-    def map_data_types(self, pd_dtype, data_frame, column):
+    def map_data_types(self, pd_dtype, column):
         """
         Converts a pandas data type to the corresponding arff data type
         :param pd_dtype: pandas data type as string
@@ -76,26 +76,26 @@ class ArffConverter(object):
         except KeyError:
             if pd_dtype == 'bool':
                 # TODO: Implement this
-                arff_dtype = self.map_column_to_arff_class(data_frame, column)
+                arff_dtype = self.map_column_to_arff_class(column)
             else:
                 raise
 
         return arff_dtype
 
-    def map_column_to_arff_class(self, data_frame, column):
+    def map_column_to_arff_class(self, column):
         """
         Converts 'bool' data type to arff format
         :return: arff class format
         """
         return "NOT YET IMPLEMENTED"
 
-    def arff_rows(self, data_frame):
+    def arff_rows(self):
         """
         Generator that yields arff rows from pandas dataframe
         :param data_frame: pandas dataframe
         :return: arff row
         """
-        for pd_row in data_frame.values:
+        for pd_row in self.data_frame.values:
             row = [str(item) for item in pd_row if not isinstance(item, str) or item]
             yield row
 
