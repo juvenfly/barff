@@ -46,8 +46,6 @@ class ArffConverter(object):
     def convert_header(self):
         """
         Converts header from data_frame to arff
-        :param data_frame: pandas data_frame
-        :param output_file: arff output file
         :return: list of lines
         """
         arff_header = []
@@ -67,6 +65,7 @@ class ArffConverter(object):
         """
         Converts a pandas data type to the corresponding arff data type
         :param pd_dtype: pandas data type as string
+        :param column: name of column in pandas dataframe
         :return: arff data type as string
         """
         try:
@@ -83,6 +82,7 @@ class ArffConverter(object):
     def map_column_to_arff_class(self, column):
         """
         Converts 'bool' data type to arff format
+        :param column: column in pandas dataframe
         :return: arff class format
         """
         unique_vals = [str(val) for val in self.data_frame[column].unique() if not isinstance(val, str) or val]
@@ -94,7 +94,6 @@ class ArffConverter(object):
     def arff_rows(self):
         """
         Generator that yields arff rows from pandas dataframe
-        :param data_frame: pandas dataframe
         :return: arff row
         """
         for pd_row in self.data_frame.values:
