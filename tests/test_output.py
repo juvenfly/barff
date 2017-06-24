@@ -1,12 +1,15 @@
 from unittest import TestCase
 
+from barff.main import ArffConverter
+
 
 class TestOutputFile(TestCase):
 
     def setUp(self):
+        self.arff_converter = ArffConverter()
         self.csv_file = open('./tests/test_input.csv', 'rU')
         self.expected_arff_file = open('./tests/expected_output.arff')
-        self.actual_arff_file = None  # TODO: Implement this
+        self.actual_arff_file = None # TODO: Implement this
 
     def tearDown(self):
         self.csv_file.close()
