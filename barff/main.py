@@ -1,5 +1,3 @@
-import csv
-
 import pandas as pd
 
 from maps import PANDAS_TO_ARFF
@@ -8,30 +6,27 @@ from maps import PANDAS_TO_ARFF
 class ArffConverter(object):
     def __init__(self):
         self.data_frame = None
-        self.writer = None
+        self.output_file = None
 
     def main(self):
         self.data_frame = pd.read_csv('./tests/test_input.csv')
-        output_file = open('./tmp/output.arff', 'w+')
-        self.writer = csv.writer(output_file, delimiter=',', quotechar='', escapechar='\\', quoting=csv.QUOTE_NONE)
+        self.output_file = open('./tmp/output.arff', 'w+')
 
         self.collect_comments()
 
-        self.writer.writerow(['@RELATION "test_relation"'])
-        self.writer.writerow([])
+        self.output_file.write('@RELATION "test_relation"\n\n')
 
         arff_header = self.convert_header()
 
         for line in arff_header:
-            self.writer.writerow(line)
+            self.output_file.write(line)
 
-        self.writer.writerow([])
-        self.writer.writerow(['@DATA'])
+        self.output_file.write('\n@DATA\n')
 
         for row in self.arff_rows():
-            self.writer.writerow(row)
+            self.output_file.write(row)
 
-        output_file.close()
+        self.output_file.close()
 
     def collect_comments(self):
         """
@@ -43,10 +38,10 @@ class ArffConverter(object):
             comment = raw_input("Please input comment line {} or 'X' to continue: ".format(line_number))
             if comment.lower() in ['x', "'x'"]:
                 break
-            comment = ['% {}'.format(comment)]
-            self.writer.writerow(comment)
+            comment = '% {}\n'.format(comment)
+            self.output_file.write(comment)
 
-        self.writer.writerow(['%'])
+        self.output_file.write('%\n')
 
     def convert_header(self):
         """
@@ -63,7 +58,7 @@ class ArffConverter(object):
 
             arff_dtype = self.map_data_types(pd_dtype, column)
 
-            line = ['@ATTRIBUTE {} {}'.format(attribute_name, arff_dtype)]
+            line = '@ATTRIBUTE {} {}\n'.format(attribute_name, arff_dtype)
             arff_header.append(line)
 
         return arff_header
@@ -90,7 +85,11 @@ class ArffConverter(object):
         Converts 'bool' data type to arff format
         :return: arff class format
         """
-        return "NOT YET IMPLEMENTED"
+        unique_vals = [str(val) for val in self.data_frame[column].unique() if not isinstance(val, str) or val]
+        print unique_vals
+        result = '{' + ','.join(unique_vals) + '}'
+
+        return result
 
     def arff_rows(self):
         """
@@ -99,7 +98,8 @@ class ArffConverter(object):
         :return: arff row
         """
         for pd_row in self.data_frame.values:
-            row = [str(item) for item in pd_row if not isinstance(item, str) or item]
+            vals = [str(item) for item in pd_row if not isinstance(item, str) or item]
+            row = ','.join(vals) + '\n'
             yield row
 
 if __name__ == '__main__':
