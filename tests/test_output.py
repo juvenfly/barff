@@ -1,7 +1,10 @@
+import os
 from mock import MagicMock
 from unittest import TestCase
 
 from barff.main import ArffConverter
+
+comments = ['this is a comment', 'this is also a comment']
 
 
 class TestOutputFile(TestCase):
@@ -11,11 +14,13 @@ class TestOutputFile(TestCase):
         self.arff_converter.collect_comments = MagicMock()
         self.csv_file = open('./tests/test_input.csv', 'rU')
         self.expected_arff_file = open('./tests/expected_output.arff')
+        self.arff_converter.main()
         self.actual_arff_file = open('./tmp/output.arff')
 
     def tearDown(self):
         self.csv_file.close()
         self.expected_arff_file.close()
+        os.remove(self.actual_arff_file.name)
 
     def test_arff_comments(self):
         for actual_line in self.actual_arff_file:
