@@ -98,16 +98,28 @@ class ArffConverter(object):
         for pd_row in self.data_frame.values:
             vals = [str(item) for item in pd_row if not isinstance(item, str) or item]
             row = ','.join(vals) + '\n'
-            row = [quote_if_space(val) for val in row.split(',')]
-            print row
+            row = [format_val(val) for val in row.split(',')]
             row = ','.join(row)
             yield row
+
+
+def format_val(val):
+    result = quote_if_space(val)
+    result = replace_nans(val)
+    return result
 
 
 def quote_if_space(val):
     result = val
     if ' ' in val:
         result = '"' + val + '"'
+    return result
+
+
+def replace_nans(val):
+    result = val
+    if val == 'nan':
+        result = '?'
     return result
 
 
