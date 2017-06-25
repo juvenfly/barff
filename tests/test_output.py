@@ -1,8 +1,24 @@
 import os
-from mock import MagicMock
+from mock import MagicMock, patch
 from unittest import TestCase
 
 from barff.main import ArffConverter
+from barff.maps import PANDAS_TO_ARFF
+
+
+class TestArffConverter(TestCase):
+
+    def setUp(self):
+        self.arff_converter = ArffConverter('./tests/test_input.csv', './tmp/output.arff')
+        self.data_frame = self.arff_converter.data_frame
+
+    @patch('barff.main.ArffConverter.map_column_to_arff_class')
+    def test_map_data_types(self, MockMeth):
+        mock_meth = MockMeth()
+        special_cases = ['bool']
+        for case in special_cases:
+            result = self.arff_converter.map_data_types(case, 'test_column')
+            mock_meth.assert_called
 
 
 class TestOutputFile(TestCase):
