@@ -4,8 +4,6 @@ from unittest import TestCase
 
 from barff.main import ArffConverter
 
-comments = ['this is a comment', 'this is also a comment']
-
 
 class TestOutputFile(TestCase):
 
@@ -21,11 +19,6 @@ class TestOutputFile(TestCase):
         self.input_file.close()
         self.output_file.close()
         os.remove(self.arff_converter.output_file.name)
-
-    def test_arff_comments(self):
-        for actual_line in self.output_file:
-            expected_line = self.expected_arff_file.readline()
-            self.assertEqual(actual_line, expected_line)
 
     def test_arff_header(self):
         csv_header = self.input_file.readline().replace('\n', '').split(',')
