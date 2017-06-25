@@ -4,12 +4,13 @@ from maps import PANDAS_TO_ARFF
 
 
 class ArffConverter(object):
-    def __init__(self):
+    def __init__(self, input_file):
+        self.input_file = input_file
         self.data_frame = None
         self.output_file = None
 
     def main(self):
-        self.data_frame = pd.read_csv('./tests/test_input.csv')
+        self.data_frame = pd.read_csv(self.input_file)
         self.output_file = open('./tmp/output.arff', 'w+')
 
         self.collect_comments()
@@ -101,5 +102,5 @@ class ArffConverter(object):
             yield row
 
 if __name__ == '__main__':
-    converter = ArffConverter()
+    converter = ArffConverter('./tests/test_input.csv')
     converter.main()
