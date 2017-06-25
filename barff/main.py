@@ -104,8 +104,9 @@ class ArffConverter(object):
 
 
 def format_val(val):
-    result = quote_if_space(val)
-    result = replace_nans(val)
+    result = val
+    result = quote_if_space(result)
+    result = replace_nans(result)
     return result
 
 
