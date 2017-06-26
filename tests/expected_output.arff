@@ -1,13 +1,10 @@
-% This is a comment
-% This is also a comment
-%
 @RELATION "test relation"
 
-@ATTRIBUTE name     STRING
-@ATTRIBUTE gender   {M,F}
-@ATTRIBUTE email    STRING
-@ATTRIBUTE phone    NUMERIC
-@ATTRIBUTE is_cool  {TRUE,FALSE}
+@ATTRIBUTE "full name" STRING
+@ATTRIBUTE gender {M,F}
+@ATTRIBUTE email STRING
+@ATTRIBUTE phone NUMERIC
+@ATTRIBUTE is_cool {TRUE,FALSE}
 @ATTRIBUTE birthday DATE "yyyy-MM-dd"
 
 @DATA

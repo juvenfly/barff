@@ -1,20 +1,30 @@
 import pandas as pd
 
-from maps import PANDAS_TO_ARFF
+from maps import PANDAS_TO_ARFF, CSV_TO_PANDAS
 
 
 class ArffConverter(object):
-    def __init__(self):
+
+    def __init__(self, input_file, output_file, relation, field_map=None):
+        """
+        Initialize instance variables
+        :param input_file: path to input file as str
+        :param output_file: path to output file as str
+        :param relation: relation as str
+        :param header_map: path to map of JSON file mapping csv headers to pandas dtypes
+        """
+        self.input_file = input_file
         self.data_frame = None
-        self.output_file = None
+        self.output_file = open(output_file, 'w+')
+        self.relation = relation
+        self.field_map = field_map
 
     def main(self):
-        self.data_frame = pd.read_csv('./tests/test_input.csv')
-        self.output_file = open('./tmp/output.arff', 'w+')
+        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
 
         self.collect_comments()
 
-        self.output_file.write('@RELATION "test_relation"\n\n')
+        self.output_file.write('@RELATION {} \n\n'.format(quote_if_space(self.relation)))
 
         arff_header = self.convert_header()
 
@@ -72,7 +82,6 @@ class ArffConverter(object):
             arff_dtype = PANDAS_TO_ARFF[pd_dtype]
         except KeyError:
             if pd_dtype == 'bool':
-                # TODO: Implement this
                 arff_dtype = self.map_column_to_arff_class(column)
             else:
                 raise
@@ -138,8 +147,3 @@ def replace_nans(val):
     if val == 'nan':
         result = '?'
     return result
-
-
-if __name__ == '__main__':
-    converter = ArffConverter()
-    converter.main()
