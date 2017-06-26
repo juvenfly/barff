@@ -1,6 +1,9 @@
+import sys
+
 import pandas as pd
 
-from maps import PANDAS_TO_ARFF, CSV_TO_PANDAS
+from maps import PANDAS_TO_ARFF
+from utils import format_val, quote_if_space
 
 
 class ArffConverter(object):
@@ -20,7 +23,7 @@ class ArffConverter(object):
         self.field_map = field_map
 
     def main(self):
-        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
+        self.create_data_frame()
 
         self.collect_comments()
 
@@ -33,10 +36,16 @@ class ArffConverter(object):
 
         self.output_file.write('\n@DATA\n')
 
-        for row in self.arff_rows():
+        for row in self.output_rows():
             self.output_file.write(row)
 
         self.output_file.close()
+
+    def collect_comments(self):
+        sys.stderr('Warning: collect_comments not implemented')
+
+
+class CsvToArffConverter(ArffConverter):
 
     def collect_comments(self):
         """
@@ -99,7 +108,7 @@ class ArffConverter(object):
 
         return result
 
-    def arff_rows(self):
+    def output_rows(self):
         """
         Generator that yields arff rows from pandas dataframe
         :return: arff row
@@ -111,44 +120,10 @@ class ArffConverter(object):
             row = ','.join(row)
             yield row
 
+    def create_data_frame(self):
+        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
+
 
 def convert_csv(csv_file, output_file=None, relation=None, field_map=None):
-    arff_converter = ArffConverter(csv_file, output_file, relation, field_map)
+    arff_converter = CsvToArffConverter(csv_file, output_file, relation, field_map)
     arff_converter.main()
-
-
-def format_val(val):
-    """
-    Helper method that applies all formatting methods on a given val.
-    :param val: raw value as string
-    :return: formatted string
-    """
-    result = val
-    result = quote_if_space(result)
-    result = replace_nans(result)
-    return result
-
-
-def quote_if_space(val):
-    """
-    Adds double quotes around a string value if it contains a space.
-    :param val: raw value as string
-    :return: formatted string
-    """
-    result = val
-    if ' ' in val:
-        result = '"' + val + '"'
-    return result
-
-
-def replace_nans(val):
-    """
-    Replaces nan values with single question mark
-    :param val: raw value as string
-    :return: formatted string
-    """
-    # TODO: Ideally this should happen earlier, before pandas NaN is stringified and .lower()ed for safety's sake.
-    result = val
-    if val == 'nan':
-        result = '?'
-    return result
