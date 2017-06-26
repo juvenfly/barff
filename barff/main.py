@@ -112,6 +112,11 @@ class ArffConverter(object):
             yield row
 
 
+def convert_csv(csv_file, output_file=None, relation=None, field_map=None):
+    arff_converter = ArffConverter(csv_file, output_file, relation, field_map)
+    arff_converter.main()
+
+
 def format_val(val):
     """
     Helper method that applies all formatting methods on a given val.
