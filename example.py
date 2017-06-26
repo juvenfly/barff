@@ -14,4 +14,5 @@ field_map = {
     'birthday': str,
 }
 
-barff.convert_csv(csv_file, output_file, relation, field_map)
+barff.csv_to_arff(csv_file, output_file, relation, field_map)
+barff.arff_to_csv(output_file, './tmp/csv_output.csv')

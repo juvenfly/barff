@@ -1,3 +1,9 @@
+def create_delimited_row(pd_row, delimiter):
+    vals = [format_val(str(item)) for item in pd_row if not isinstance(item, str) or item]
+    row = delimiter.join(vals) + '\n'
+    return row
+
+
 def format_val(val):
     """
     Helper method that applies all formatting methods on a given val.

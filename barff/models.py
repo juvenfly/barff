@@ -1,14 +1,16 @@
+import csv
+import shlex
 import sys
 
 import pandas as pd
 
 from maps import PANDAS_TO_ARFF
-from utils import format_val, quote_if_space
+from utils import create_delimited_row, quote_if_space
 
 
 class ArffConverter(object):
 
-    def __init__(self, input_file, output_file, relation, field_map=None):
+    def __init__(self, input_file, output_file, relation=None, field_map=None):
         """
         Initialize instance variables
         :param input_file: path to input file as str
@@ -19,7 +21,7 @@ class ArffConverter(object):
         self.input_file = input_file
         self.data_frame = None
         self.output_file = open(output_file, 'w+')
-        self.relation = relation
+        self.relation = relation if relation else 'undefined relation'
         self.field_map = field_map
 
     def main(self):
@@ -29,9 +31,9 @@ class ArffConverter(object):
 
         self.output_file.write('@RELATION {} \n\n'.format(quote_if_space(self.relation)))
 
-        arff_header = self.convert_header()
+        output_header = self.convert_header()
 
-        for line in arff_header:
+        for line in output_header:
             self.output_file.write(line)
 
         self.output_file.write('\n@DATA\n')
@@ -114,16 +116,50 @@ class CsvToArffConverter(ArffConverter):
         :return: arff row
         """
         for pd_row in self.data_frame.values:
-            vals = [str(item) for item in pd_row if not isinstance(item, str) or item]
-            row = ','.join(vals) + '\n'
-            row = [format_val(val) for val in row.split(',')]
-            row = ','.join(row)
+            row = create_delimited_row(pd_row, delimiter=',')
             yield row
 
     def create_data_frame(self):
         self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
 
 
-def convert_csv(csv_file, output_file=None, relation=None, field_map=None):
-    arff_converter = CsvToArffConverter(csv_file, output_file, relation, field_map)
-    arff_converter.main()
+class ArffToCsvConverter(ArffConverter):
+
+    def main(self):
+        self.create_data_frame()
+        self.data_frame.to_csv(self.output_file, index=False, quoting=csv.QUOTE_NONE, escapechar='\\')
+
+    def convert_header(self):
+        csv_header = []
+        arff_file = open(self.input_file, 'rU')
+        for line in arff_file:
+            print line
+            if line.startswith('@ATTRIBUTE'):
+                header_val = shlex.split(line)[1]
+                csv_header.append(header_val)
+            if line.startswith('@DATA'):
+                break
+        arff_file.close()
+        return csv_header
+
+    def create_data_frame(self):
+        header = self.convert_header()
+        arff_data = open(self.input_file, 'rU')
+        while True:
+            line = arff_data.next()
+            if '@DATA' in line:
+                break
+        data = [line.replace('\n', '').split(',') for line in arff_data]
+        print header, data
+        self.data_frame = pd.DataFrame(columns=header, data=data)
+        arff_data.close()
+
+
+def csv_to_arff(csv_file, output_file, relation=None, field_map=None):
+    converter = CsvToArffConverter(csv_file, output_file, relation, field_map)
+    converter.main()
+
+
+def arff_to_csv(arff_file, output_file):
+    converter = ArffToCsvConverter(arff_file, output_file)
+    converter.main()
