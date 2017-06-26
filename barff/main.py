@@ -147,13 +147,3 @@ def replace_nans(val):
     if val == 'nan':
         result = '?'
     return result
-
-
-if __name__ == '__main__':
-    converter = ArffConverter(
-        input_file='./tests/test_input.csv',
-        output_file='./tmp/output.arff',
-        relation='test relation',
-        field_map=CSV_TO_PANDAS,
-    )
-    converter.main()
