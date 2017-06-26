@@ -1,17 +1,25 @@
 import pandas as pd
 
-from maps import PANDAS_TO_ARFF
+from maps import PANDAS_TO_ARFF, CSV_TO_PANDAS
 
 
 class ArffConverter(object):
+
     def __init__(self, input_file, output_file, relation):
+        """
+        Initialize instance variables
+        :param input_file: path to input file as str
+        :param output_file: path to output file as str
+        :param relation: relation as str
+        :param header_map: path to map of JSON file mapping csv headers to pandas dtypes
+        """
         self.input_file = input_file
         self.data_frame = None
         self.output_file = open(output_file, 'w+')
         self.relation = relation
 
     def main(self):
-        self.data_frame = pd.read_csv(self.input_file)
+        self.data_frame = pd.read_csv(self.input_file, dtype=CSV_TO_PANDAS)
 
         self.collect_comments()
 
