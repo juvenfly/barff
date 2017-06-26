@@ -56,7 +56,7 @@ class ArffConverter(object):
 
             arff_dtype = self.map_data_types(pd_dtype, column)
 
-            line = '@ATTRIBUTE {} {}\n'.format(attribute_name, arff_dtype)
+            line = '@ATTRIBUTE {} {}\n'.format(quote_if_space(attribute_name), arff_dtype)
             arff_header.append(line)
 
         return arff_header
