@@ -3,7 +3,7 @@ import os
 from mock import MagicMock, patch
 from unittest import TestCase
 
-from barff.main import ArffConverter
+from barff.main import ArffConverter, quote_if_space
 from barff.maps import PANDAS_TO_ARFF
 
 
@@ -60,5 +60,7 @@ class TestOutputFile(TestCase):
             arff_line = self.output_file.readline()
 
         for csv_line in self.input_file:
-            arff_line = self.output_file.readline()
+            csv_line = csv_line.split(',')
+            csv_line = [quote_if_space(item) for item in csv_line]
+            arff_line = self.output_file.readline().split(',')
             self.assertEqual(csv_line, arff_line)
