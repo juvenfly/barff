@@ -5,7 +5,6 @@ from unittest import TestCase
 
 from barff import main
 from barff.main import ArffConverter
-from barff.maps import PANDAS_TO_ARFF
 
 
 class TestArffConverter(TestCase):

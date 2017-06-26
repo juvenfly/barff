@@ -4,17 +4,18 @@ from maps import PANDAS_TO_ARFF
 
 
 class ArffConverter(object):
-    def __init__(self, input_file, output_file):
+    def __init__(self, input_file, output_file, relation):
         self.input_file = input_file
         self.data_frame = None
         self.output_file = open(output_file, 'w+')
+        self.relation = relation
 
     def main(self):
         self.data_frame = pd.read_csv(self.input_file)
 
         self.collect_comments()
 
-        self.output_file.write('@RELATION "test_relation"\n\n')
+        self.output_file.write('@RELATION {} \n\n'.format(quote_if_space(self.relation)))
 
         arff_header = self.convert_header()
 
@@ -143,6 +144,7 @@ def replace_nans(val):
 if __name__ == '__main__':
     converter = ArffConverter(
         input_file='./tests/test_input.csv',
-        output_file='./tmp/output.arff'
+        output_file='./tmp/output.arff',
+        relation='test relation'
     )
     converter.main()
