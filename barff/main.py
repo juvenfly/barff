@@ -73,7 +73,6 @@ class ArffConverter(object):
             arff_dtype = PANDAS_TO_ARFF[pd_dtype]
         except KeyError:
             if pd_dtype == 'bool':
-                # TODO: Implement this
                 arff_dtype = self.map_column_to_arff_class(column)
             else:
                 raise
