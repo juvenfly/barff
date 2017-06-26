@@ -5,7 +5,7 @@ from maps import PANDAS_TO_ARFF, CSV_TO_PANDAS
 
 class ArffConverter(object):
 
-    def __init__(self, input_file, output_file, relation):
+    def __init__(self, input_file, output_file, relation, field_map=None):
         """
         Initialize instance variables
         :param input_file: path to input file as str
@@ -17,9 +17,10 @@ class ArffConverter(object):
         self.data_frame = None
         self.output_file = open(output_file, 'w+')
         self.relation = relation
+        self.field_map = field_map
 
     def main(self):
-        self.data_frame = pd.read_csv(self.input_file, dtype=CSV_TO_PANDAS)
+        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
 
         self.collect_comments()
 
@@ -152,6 +153,7 @@ if __name__ == '__main__':
     converter = ArffConverter(
         input_file='./tests/test_input.csv',
         output_file='./tmp/output.arff',
-        relation='test relation'
+        relation='test relation',
+        field_map=CSV_TO_PANDAS,
     )
     converter.main()
