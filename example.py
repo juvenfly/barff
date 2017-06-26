@@ -1,7 +1,10 @@
 import numpy as np
 
-from barff.main import ArffConverter
+import barff
 
+csv_file = './tests/test_input.csv'
+output_file = './tmp/output.arff'
+relation='test relation'
 field_map = {
     'full name': str,
     'gender': str,
@@ -11,12 +14,4 @@ field_map = {
     'birthday': str,
 }
 
-
-arff_converter = ArffConverter(
-    input_file='./tests/test_input.csv',
-    output_file='./tmp/output.arff',
-    relation='test relation',
-    field_map=field_map
-)
-
-arff_converter.main()
+barff.convert_csv(csv_file, output_file, relation, field_map)
