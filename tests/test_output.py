@@ -1,3 +1,4 @@
+import shlex
 import os
 from mock import MagicMock, patch
 from unittest import TestCase
@@ -42,7 +43,7 @@ class TestOutputFile(TestCase):
 
         for line in self.output_file:
             if line.startswith('@ATTRIBUTE'):
-                header_val = line.split(' ')[1]
+                header_val = shlex.split(line)[1]
                 self.assertIn(header_val, csv_header)
                 csv_header.pop(csv_header.index(header_val))
 
