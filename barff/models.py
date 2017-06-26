@@ -44,6 +44,17 @@ class ArffConverter(object):
     def collect_comments(self):
         sys.stderr('Warning: collect_comments not implemented')
 
+    def map_column_to_arff_class(self, column):
+        """
+        Converts 'bool' data type to arff format
+        :param column: column in pandas dataframe
+        :return: arff class format
+        """
+        unique_vals = [str(val) for val in self.data_frame[column].unique() if not isinstance(val, str) or val]
+        result = '{' + ','.join(unique_vals) + '}'
+
+        return result
+
 
 class CsvToArffConverter(ArffConverter):
 
@@ -96,17 +107,6 @@ class CsvToArffConverter(ArffConverter):
                 raise
 
         return arff_dtype
-
-    def map_column_to_arff_class(self, column):
-        """
-        Converts 'bool' data type to arff format
-        :param column: column in pandas dataframe
-        :return: arff class format
-        """
-        unique_vals = [str(val) for val in self.data_frame[column].unique() if not isinstance(val, str) or val]
-        result = '{' + ','.join(unique_vals) + '}'
-
-        return result
 
     def output_rows(self):
         """
