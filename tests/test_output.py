@@ -3,7 +3,8 @@ import os
 from mock import MagicMock, patch
 from unittest import TestCase
 
-from barff.main import ArffConverter, quote_if_space
+from barff import main
+from barff.main import ArffConverter
 from barff.maps import PANDAS_TO_ARFF
 
 
@@ -20,6 +21,17 @@ class TestArffConverter(TestCase):
         for case in special_cases:
             result = self.arff_converter.map_data_types(case, 'test_column')
             mock_meth.assert_called
+
+    def test_quote_if_space(self):
+        expected_outcomes = {
+            'abcd': 'abcd',
+            ' defg': '" defg"',
+            'hijk ': '"hijk "',
+            'lm no': '"lm no"',
+        }
+        for val in expected_outcomes.keys():
+            outcome = main.quote_if_space(val)
+            self.assertEqual(outcome, expected_outcomes[val])
 
 
 class TestOutputFile(TestCase):
@@ -61,6 +73,6 @@ class TestOutputFile(TestCase):
 
         for csv_line in self.input_file:
             csv_line = csv_line.split(',')
-            csv_line = [quote_if_space(item) for item in csv_line]
+            csv_line = [main.quote_if_space(item) for item in csv_line]
             arff_line = self.output_file.readline().split(',')
             self.assertEqual(csv_line, arff_line)
