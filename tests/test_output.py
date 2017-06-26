@@ -10,7 +10,11 @@ from barff.main import ArffConverter
 class TestArffConverter(TestCase):
 
     def setUp(self):
-        self.arff_converter = ArffConverter('./tests/test_input.csv', './tmp/output.arff')
+        self.arff_converter = ArffConverter(
+            input_file='./tests/test_input.csv',
+            output_file='./tmp/output.arff',
+            relation='test relation',
+        )
         self.data_frame = self.arff_converter.data_frame
 
     @patch('barff.main.ArffConverter.map_column_to_arff_class')
@@ -36,7 +40,11 @@ class TestArffConverter(TestCase):
 class TestOutputFile(TestCase):
 
     def setUp(self):
-        self.arff_converter = ArffConverter('./tests/test_input.csv', './tmp/output.arff')
+        self.arff_converter = ArffConverter(
+            input_file='./tests/test_input.csv',
+            output_file='./tmp/output.arff',
+            relation='test relation',
+        )
         self.arff_converter.collect_comments = MagicMock()
         self.expected_arff_file = open('./tests/expected_output.arff')
         self.arff_converter.main()
