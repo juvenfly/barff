@@ -1,11 +1,11 @@
 import csv
 import shlex
-import sys
+from builtins import input
 
 import pandas as pd
 
-from maps import PANDAS_TO_ARFF
-from utils import create_delimited_row, quote_if_space
+from barff.maps import PANDAS_TO_ARFF
+from barff.utils import create_delimited_row, quote_if_space
 
 
 class ArffConverter(object):
@@ -43,9 +43,6 @@ class ArffConverter(object):
 
         self.output_file.close()
 
-    def collect_comments(self):
-        sys.stderr('Warning: collect_comments not implemented')
-
     def map_column_to_arff_class(self, column):
         """
         Converts 'bool' data type to arff format
@@ -67,7 +64,7 @@ class CsvToArffConverter(ArffConverter):
         line_number = 0
         while True:
             line_number += 1
-            comment = raw_input("Please input comment line {} or 'X' to continue: ".format(line_number))
+            comment = input("Please input comment line {} or 'X' to continue: ".format(line_number))
             if comment.lower() in ['x', "'x'"]:
                 break
             comment = '% {}\n'.format(comment)

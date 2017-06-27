@@ -4,7 +4,7 @@ from mock import MagicMock, patch
 from unittest import TestCase
 
 from barff import utils
-from barff.models import ArffConverter, CsvToArffConverter
+from barff.models import CsvToArffConverter
 from barff.maps import CSV_TO_PANDAS
 
 
