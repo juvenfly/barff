@@ -133,7 +133,6 @@ class ArffToCsvConverter(ArffConverter):
         csv_header = []
         arff_file = open(self.input_file, 'rU')
         for line in arff_file:
-            print line
             if line.startswith('@ATTRIBUTE'):
                 header_val = shlex.split(line)[1]
                 csv_header.append(header_val)
@@ -150,7 +149,6 @@ class ArffToCsvConverter(ArffConverter):
             if '@DATA' in line:
                 break
         data = [line.replace('\n', '').split(',') for line in arff_data]
-        print header, data
         self.data_frame = pd.DataFrame(columns=header, data=data)
         arff_data.close()
 
