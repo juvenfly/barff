@@ -4,7 +4,7 @@ import barff
 
 csv_file = './tests/test_input.csv'
 output_file = './tmp/output.arff'
-relation='test relation'
+relation = 'test relation'
 field_map = {
     'full name': str,
     'gender': str,
