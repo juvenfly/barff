@@ -1,1 +1,1 @@
-from main import *
+from barff.models import *

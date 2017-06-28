@@ -3,15 +3,15 @@ import os
 from mock import MagicMock, patch
 from unittest import TestCase
 
-from barff import main
-from barff.main import ArffConverter
+from barff import utils
+from barff.models import CsvToArffConverter
 from barff.maps import CSV_TO_PANDAS
 
 
-class TestArffConverter(TestCase):
+class TestCsvToArffConverter(TestCase):
 
     def setUp(self):
-        self.arff_converter = ArffConverter(
+        self.arff_converter = CsvToArffConverter(
             input_file='./tests/test_input.csv',
             output_file='./tmp/output.arff',
             relation='test relation',
@@ -19,7 +19,7 @@ class TestArffConverter(TestCase):
         )
         self.data_frame = self.arff_converter.data_frame
 
-    @patch('barff.main.ArffConverter.map_column_to_arff_class')
+    @patch('barff.models.ArffConverter.map_column_to_arff_class')
     def test_map_data_types(self, MockMeth):
         mock_meth = MockMeth()
         special_cases = ['bool']
@@ -35,14 +35,14 @@ class TestArffConverter(TestCase):
             'lm no': '"lm no"',
         }
         for val in expected_outcomes.keys():
-            outcome = main.quote_if_space(val)
+            outcome = utils.quote_if_space(val)
             self.assertEqual(outcome, expected_outcomes[val])
 
 
 class TestOutputFile(TestCase):
 
     def setUp(self):
-        self.arff_converter = ArffConverter(
+        self.arff_converter = CsvToArffConverter(
             input_file='./tests/test_input.csv',
             output_file='./tmp/output.arff',
             relation='test relation',
@@ -83,7 +83,7 @@ class TestOutputFile(TestCase):
 
         for csv_line in self.input_file:
             csv_line = csv_line.split(',')
-            csv_line = [main.quote_if_space(item) for item in csv_line]
+            csv_line = [utils.quote_if_space(item) for item in csv_line]
             arff_line = self.output_file.readline().split(',')
             if '?' not in arff_line:
                 self.assertEqual(csv_line, arff_line)

@@ -1,11 +1,16 @@
+import csv
+import shlex
+from builtins import input
+
 import pandas as pd
 
-from maps import PANDAS_TO_ARFF, CSV_TO_PANDAS
+from barff.maps import PANDAS_TO_ARFF
+from barff.utils import create_delimited_row, quote_if_space
 
 
 class ArffConverter(object):
 
-    def __init__(self, input_file, output_file, relation, field_map=None):
+    def __init__(self, input_file, output_file, relation=None, field_map=None):
         """
         Initialize instance variables
         :param input_file: path to input file as str
@@ -16,27 +21,41 @@ class ArffConverter(object):
         self.input_file = input_file
         self.data_frame = None
         self.output_file = open(output_file, 'w+')
-        self.relation = relation
+        self.relation = relation if relation else 'undefined relation'
         self.field_map = field_map
 
     def main(self):
-        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
+        self.create_data_frame()
 
         self.collect_comments()
 
         self.output_file.write('@RELATION {} \n\n'.format(quote_if_space(self.relation)))
 
-        arff_header = self.convert_header()
+        output_header = self.convert_header()
 
-        for line in arff_header:
+        for line in output_header:
             self.output_file.write(line)
 
         self.output_file.write('\n@DATA\n')
 
-        for row in self.arff_rows():
+        for row in self.output_rows():
             self.output_file.write(row)
 
         self.output_file.close()
+
+    def map_column_to_arff_class(self, column):
+        """
+        Converts 'bool' data type to arff format
+        :param column: column in pandas dataframe
+        :return: arff class format
+        """
+        unique_vals = [str(val) for val in self.data_frame[column].unique() if not isinstance(val, str) or val]
+        result = '{' + ','.join(unique_vals) + '}'
+
+        return result
+
+
+class CsvToArffConverter(ArffConverter):
 
     def collect_comments(self):
         """
@@ -45,7 +64,7 @@ class ArffConverter(object):
         line_number = 0
         while True:
             line_number += 1
-            comment = raw_input("Please input comment line {} or 'X' to continue: ".format(line_number))
+            comment = input("Please input comment line {} or 'X' to continue: ".format(line_number))
             if comment.lower() in ['x', "'x'"]:
                 break
             comment = '% {}\n'.format(comment)
@@ -88,67 +107,54 @@ class ArffConverter(object):
 
         return arff_dtype
 
-    def map_column_to_arff_class(self, column):
-        """
-        Converts 'bool' data type to arff format
-        :param column: column in pandas dataframe
-        :return: arff class format
-        """
-        unique_vals = [str(val) for val in self.data_frame[column].unique() if not isinstance(val, str) or val]
-        result = '{' + ','.join(unique_vals) + '}'
-
-        return result
-
-    def arff_rows(self):
+    def output_rows(self):
         """
         Generator that yields arff rows from pandas dataframe
         :return: arff row
         """
         for pd_row in self.data_frame.values:
-            vals = [str(item) for item in pd_row if not isinstance(item, str) or item]
-            row = ','.join(vals) + '\n'
-            row = [format_val(val) for val in row.split(',')]
-            row = ','.join(row)
+            row = create_delimited_row(pd_row, delimiter=',')
             yield row
 
-
-def convert_csv(csv_file, output_file=None, relation=None, field_map=None):
-    arff_converter = ArffConverter(csv_file, output_file, relation, field_map)
-    arff_converter.main()
+    def create_data_frame(self):
+        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
 
 
-def format_val(val):
-    """
-    Helper method that applies all formatting methods on a given val.
-    :param val: raw value as string
-    :return: formatted string
-    """
-    result = val
-    result = quote_if_space(result)
-    result = replace_nans(result)
-    return result
+class ArffToCsvConverter(ArffConverter):
+
+    def main(self):
+        self.create_data_frame()
+        self.data_frame.to_csv(self.output_file, index=False, quoting=csv.QUOTE_NONE, escapechar='\\')
+
+    def convert_header(self):
+        csv_header = []
+        arff_file = open(self.input_file, 'rU')
+        for line in arff_file:
+            if line.startswith('@ATTRIBUTE'):
+                header_val = shlex.split(line)[1]
+                csv_header.append(header_val)
+            if line.startswith('@DATA'):
+                break
+        arff_file.close()
+        return csv_header
+
+    def create_data_frame(self):
+        header = self.convert_header()
+        arff_data = open(self.input_file, 'rU')
+        while True:
+            line = arff_data.next()
+            if '@DATA' in line:
+                break
+        data = [line.replace('\n', '').split(',') for line in arff_data]
+        self.data_frame = pd.DataFrame(columns=header, data=data)
+        arff_data.close()
 
 
-def quote_if_space(val):
-    """
-    Adds double quotes around a string value if it contains a space.
-    :param val: raw value as string
-    :return: formatted string
-    """
-    result = val
-    if ' ' in val:
-        result = '"' + val + '"'
-    return result
+def csv_to_arff(csv_file, output_file, relation=None, field_map=None):
+    converter = CsvToArffConverter(csv_file, output_file, relation, field_map)
+    converter.main()
 
 
-def replace_nans(val):
-    """
-    Replaces nan values with single question mark
-    :param val: raw value as string
-    :return: formatted string
-    """
-    # TODO: Ideally this should happen earlier, before pandas NaN is stringified and .lower()ed for safety's sake.
-    result = val
-    if val == 'nan':
-        result = '?'
-    return result
+def arff_to_csv(arff_file, output_file):
+    converter = ArffToCsvConverter(arff_file, output_file)
+    converter.main()
