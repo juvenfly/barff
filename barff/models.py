@@ -1,9 +1,12 @@
 import csv
+import os
 import shlex
+import sys
 from builtins import input
 
 import pandas as pd
 
+from barff.exceptions import ValidationError
 from barff.maps import PANDAS_TO_ARFF
 from barff.utils import create_delimited_row, quote_if_space
 
@@ -158,3 +161,31 @@ def csv_to_arff(csv_file, output_file, relation=None, field_map=None):
 def arff_to_csv(arff_file, output_file):
     converter = ArffToCsvConverter(arff_file, output_file)
     converter.main()
+
+
+class ArffValidator(object):
+
+    def __init__(self, arff_file, input_file):
+        self.arff_file = open(arff_file, 'rU')
+        self.input_file = open(input_file, 'rU')
+        self.file_extension = os.path.splitext(input_file)[1].lower()
+
+    def prepare_files(self):
+
+        for line in self.arff_file:
+            if not line.startswith('@DATA'):
+                self.arff_file.readline()
+
+        if self.file_extension == '.csv':
+            self.input_file.next()
+
+    def validate(self):
+        for line in self.input_file:
+            arff_line = self.arff_file.readline()
+            if line != arff_line:
+                msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
+                raise ValidationError(msg)
+        sys.stdout('Validation complete. Files match.')
+
+        self.arff_file.close()
+        self.input_file.close()
