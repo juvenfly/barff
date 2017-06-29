@@ -100,13 +100,16 @@ class CsvToArffConverter(ArffConverter):
         :param column: name of column in pandas dataframe
         :return: arff data type as string
         """
-        try:
-            arff_dtype = PANDAS_TO_ARFF[pd_dtype]
-        except KeyError:
-            if pd_dtype == 'bool':
-                arff_dtype = self.map_column_to_arff_class(column)
-            else:
-                raise
+        if self.field_map:
+            arff_dtype = self.field_map[column]['arff_dtype']
+        else:
+            try:
+                arff_dtype = PANDAS_TO_ARFF[column]
+            except KeyError:
+                if pd_dtype == 'bool':
+                    arff_dtype = self.map_column_to_arff_class(column)
+                else:
+                    raise
 
         return arff_dtype
 
@@ -120,7 +123,10 @@ class CsvToArffConverter(ArffConverter):
             yield row
 
     def create_data_frame(self):
-        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
+        fields = self.field_map.keys()
+        vals = [self.field_map[field]['pandas_dtype'] for field in fields]
+        pd_field_map = dict(zip(fields, vals))
+        self.data_frame = pd.read_csv(self.input_file, dtype=pd_field_map)
 
 
 class ArffToCsvConverter(ArffConverter):
