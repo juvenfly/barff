@@ -9,10 +9,28 @@ PANDAS_TO_ARFF = {
 }
 
 CSV_TO_PANDAS = {
-    'full name': str,
-    'gender': str,
-    'email': str,
-    'phone': str,
-    'is_cool': np.bool,
-    'birthday': str,
+    'full name': {
+        'pandas_dtype': str,
+        'arff_dtype': 'STRING',
+    },
+    'gender': {
+        'pandas_dtype': str,
+        'arff_dtype': 'STRING',
+    },
+    'email': {
+        'pandas_dtype': str,
+        'arff_dtype': 'STRING',
+    },
+    'phone': {
+        'pandas_dtype': str,
+        'arff_dtype': 'STRING',
+    },
+    'is_cool': {
+        'pandas_dtype': np.bool,
+        'arff_dtype': 'CLASS',
+    },
+    'birthday': {
+        'pandas_dtype': str,
+        'arff_dtype': 'STRING',
+    },
 }

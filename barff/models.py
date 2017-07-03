@@ -1,9 +1,12 @@
 import csv
+import os
 import shlex
+import sys
 from builtins import input
 
 import pandas as pd
 
+from barff.exceptions import ValidationError
 from barff.maps import PANDAS_TO_ARFF
 from barff.utils import create_delimited_row, quote_if_space
 
@@ -97,13 +100,16 @@ class CsvToArffConverter(ArffConverter):
         :param column: name of column in pandas dataframe
         :return: arff data type as string
         """
-        try:
-            arff_dtype = PANDAS_TO_ARFF[pd_dtype]
-        except KeyError:
-            if pd_dtype == 'bool':
-                arff_dtype = self.map_column_to_arff_class(column)
-            else:
-                raise
+        if self.field_map:
+            arff_dtype = self.field_map[column]['arff_dtype']
+        else:
+            try:
+                arff_dtype = PANDAS_TO_ARFF[column]
+            except KeyError:
+                if pd_dtype == 'bool':
+                    arff_dtype = self.map_column_to_arff_class(column)
+                else:
+                    raise
 
         return arff_dtype
 
@@ -117,7 +123,10 @@ class CsvToArffConverter(ArffConverter):
             yield row
 
     def create_data_frame(self):
-        self.data_frame = pd.read_csv(self.input_file, dtype=self.field_map)
+        fields = self.field_map.keys()
+        vals = [self.field_map[field]['pandas_dtype'] for field in fields]
+        pd_field_map = dict(zip(fields, vals))
+        self.data_frame = pd.read_csv(self.input_file, dtype=pd_field_map)
 
 
 class ArffToCsvConverter(ArffConverter):
@@ -158,3 +167,31 @@ def csv_to_arff(csv_file, output_file, relation=None, field_map=None):
 def arff_to_csv(arff_file, output_file):
     converter = ArffToCsvConverter(arff_file, output_file)
     converter.main()
+
+
+class ArffValidator(object):
+
+    def __init__(self, arff_file, input_file):
+        self.arff_file = open(arff_file, 'rU')
+        self.input_file = open(input_file, 'rU')
+        self.file_extension = os.path.splitext(input_file)[1].lower()
+
+    def prepare_files(self):
+
+        for line in self.arff_file:
+            if not line.startswith('@DATA'):
+                self.arff_file.readline()
+
+        if self.file_extension == '.csv':
+            self.input_file.next()
+
+    def validate(self):
+        for line in self.input_file:
+            arff_line = self.arff_file.readline()
+            if line != arff_line:
+                msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
+                raise ValidationError(msg)
+        sys.stdout('Validation complete. Files match.')
+
+        self.arff_file.close()
+        self.input_file.close()
