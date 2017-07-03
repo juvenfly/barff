@@ -213,5 +213,3 @@ def compare_values(line, arff_line):
         if entry == arff_line[i]:
             if ' ' in arff_line[i] and quote_if_space(entry) != arff_line[i]:
                 raise ValidationError(msg)
-
-
