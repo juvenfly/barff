@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
 
-from barff.models import ArffValidator
+from barff.models import ArffValidator, compare_values
 from barff.exceptions import ValidationError
 
 
@@ -34,9 +34,24 @@ class TestArffValidator(TestCase):
 
     def test_compare_values(self):
         failure_cases = [
-            ([], []),
+            {
+                'input_line': ['entry with space', 'good_val', 'good_val'],
+                'output_line': ['entry with space', 'good_val', 'good_val'],
+            },
         ]
 
         success_cases = [
-            ([], []),
+            {
+                'input_line': ['entry with space', 'good_val', 'good_val'],
+                'output_line': ['"entry with space"', 'good_val', 'good_val'],
+            },
         ]
+
+        for case in failure_cases:
+            self.assertRaises(ValidationError, compare_values, line=case['input_line'], arff_line=case['output_line'])
+
+        for case in success_cases:
+            try:
+                compare_values(line=case['input_line'], arff_line=case['output_line'])
+            except ValidationError:
+                self.fail('compare_values() raised ValidationError unexpectedly!')
