@@ -28,6 +28,10 @@ class ArffConverter(object):
         self.field_map = field_map
 
     def main(self):
+        """
+        Main method for base ArffConverter class. Several helper methods must be defined by
+        child classes.
+        """
         self.create_data_frame()
 
         self.collect_comments()
@@ -177,7 +181,9 @@ class ArffValidator(object):
         self.file_extension = os.path.splitext(input_file)[1].lower()
 
     def prepare_files(self):
-
+        """
+        Skips headers so that validate can begin comparing files at each file's first line of data.
+        """
         for line in self.arff_file:
             if line.startswith('@DATA'):
                 break
@@ -186,6 +192,11 @@ class ArffValidator(object):
             self.input_file.next()
 
     def validate(self):
+        """
+        Main process for ArffValidator. Compares each file, line by line.
+        :return: Returns True if no ValidationError is raised in the compare_values step
+        """
+        # TODO: Add header validation.
         self.prepare_files()
         for line in self.input_file:
             line = line.split(',')
@@ -200,6 +211,11 @@ class ArffValidator(object):
 
 
 def compare_values(line, arff_line):
+    """
+    Compares entries in lines from the input & output files and raises a ValidationError on mismatch
+    :param line: line from input file split into a list of entries
+    :param arff_line: line from output file split into a list of entries
+    """
     msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
     for i, entry in enumerate(line):
         print(entry, arff_line[i])
