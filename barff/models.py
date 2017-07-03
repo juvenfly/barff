@@ -179,19 +179,39 @@ class ArffValidator(object):
     def prepare_files(self):
 
         for line in self.arff_file:
-            if not line.startswith('@DATA'):
-                self.arff_file.readline()
+            if line.startswith('@DATA'):
+                break
 
         if self.file_extension == '.csv':
             self.input_file.next()
 
     def validate(self):
+        self.prepare_files()
         for line in self.input_file:
-            arff_line = self.arff_file.readline()
-            if line != arff_line:
-                msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
-                raise ValidationError(msg)
-        sys.stdout('Validation complete. Files match.')
+            line = line.split(',')
+            arff_line = self.arff_file.next().split(',')
+            compare_values(line, arff_line)
+        sys.stdout.write('Validation complete. Files match.')
 
         self.arff_file.close()
         self.input_file.close()
+
+        return True
+
+
+def compare_values(line, arff_line):
+    msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
+    for i, entry in enumerate(line):
+        print(entry, arff_line[i])
+
+        # negative cases
+        if entry != arff_line[i]:
+            if ' ' in entry and quote_if_space(entry) != arff_line[i]:
+                raise ValidationError(msg)
+
+        # false positives
+        if entry == arff_line[i]:
+            if ' ' in arff_line[i] and quote_if_space(entry) != arff_line[i]:
+                raise ValidationError(msg)
+
+
