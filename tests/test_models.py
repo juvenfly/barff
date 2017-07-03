@@ -33,6 +33,7 @@ class TestArffValidator(TestCase):
         self.assertRaises(ValidationError, self.bad_validator.validate)
 
     def test_compare_values(self):
+        # TODO: Find & add more edge cases
         failure_cases = [
             {
                 'input_line': ['entry with space', 'good_val', 'good_val'],
