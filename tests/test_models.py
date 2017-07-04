@@ -17,6 +17,7 @@ class TestToArffConverter(TestCase):
         )
 
     def tearDown(self):
+        os.remove(self.converter.output_file.name)
         self.converter = None
 
     def test_instance_vars(self):
