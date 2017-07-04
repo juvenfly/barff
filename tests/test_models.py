@@ -37,22 +37,26 @@ class TestArffValidator(TestCase):
         failure_cases = [
             {
                 'input_line': ['entry with space', 'good_val', 'good_val'],
-                'output_line': ['entry with space', 'good_val', 'good_val'],
+                'arff_line': ['entry with space', 'good_val', 'good_val'],
             },
+            {
+                'input_line': ['entry with space', 'none', 'good_val'],
+                'arff_line': ['"entry with space"', 'none', 'good_val'],
+            }
         ]
 
         success_cases = [
             {
-                'input_line': ['entry with space', 'good_val', 'good_val'],
-                'output_line': ['"entry with space"', 'good_val', 'good_val'],
+                'input_line': ['entry with space', 'good_val', 'none'],
+                'arff_line': ['"entry with space"', 'good_val', '?'],
             },
         ]
 
         for case in failure_cases:
-            self.assertRaises(ValidationError, compare_values, line=case['input_line'], arff_line=case['output_line'])
+            self.assertRaises(ValidationError, compare_values, line=case['input_line'], arff_line=case['arff_line'])
 
         for case in success_cases:
             try:
-                compare_values(line=case['input_line'], arff_line=case['output_line'])
+                compare_values(line=case['input_line'], arff_line=case['arff_line'])
             except ValidationError:
                 self.fail('compare_values() raised ValidationError unexpectedly!')
