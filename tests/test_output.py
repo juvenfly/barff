@@ -8,6 +8,7 @@ from barff.models import CsvToArffConverter
 from barff.maps import CSV_TO_PANDAS
 
 
+# TODO: There's a lot of redundancy here with test_models now.
 class TestCsvToArffConverter(TestCase):
 
     def setUp(self):
@@ -61,7 +62,6 @@ class TestOutputFile(TestCase):
 
     def test_arff_header(self):
         csv_header = self.input_file.readline().replace('\n', '').split(',')
-        print csv_header
 
         for line in self.output_file:
             if line.startswith('@ATTRIBUTE'):
