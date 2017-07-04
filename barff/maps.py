@@ -1,4 +1,6 @@
 # flake8: noqa
+from datetime import datetime
+
 import numpy as np
 
 PANDAS_TO_ARFF = {
@@ -40,4 +42,18 @@ ARFF_FIELD_MAPS = {
     'falsey':   [0, '0', 'f', 'false', 'n', 'no'],
     'truthy':   [1, '1', 't', 'true', 'y', 'yes'],
     'none':     [None, 'none', 'null', 'nan', '?'],
+}
+
+ARFF_DATA_TYPES = {
+    'builtins': {
+        (str, unicode, ): 'STRING',
+        (int, long, ): 'NUMERIC',
+        (float, ): 'REAL',
+        (datetime, ): 'DATE',
+    },
+    'np_dtypes': {
+        (np.int, ): 'NUMERIC',
+        (np.float, ): 'REAL',
+        (np.bool, ): '<nominal-specification',
+    },
 }
