@@ -9,6 +9,7 @@ from barff.models import (
     ToArffConverter,
     FromArffConverter,
     CsvToArffConverter,
+    ArffToCsvConverter,
     ArffValidator,
     compare_values
 )
@@ -106,6 +107,27 @@ class TestFromArffConverter(TestCase):
         self.converter.main()
         self.converter.process_header.assert_called()
         self.converter.create_data_frame.assert_called()
+
+
+class TestArffToCsvConverter(TestCase):
+
+    def setUp(self):
+        self.converter = ArffToCsvConverter(
+            input_file='./tests/expected_output.arff',
+            output_file='./tmp/csv_output.csv',
+        )
+
+    def tearDown(self):
+        os.remove(self.converter.output_file.name)
+        self.converter = None
+
+    def test_process_header(self):
+        print("test_process_header not yet implemented")
+        assert False
+
+    def test_create_data_frame(self):
+        print("test_create_data_frame not yet implemented")
+        assert False
 
 
 class TestArffValidator(TestCase):
