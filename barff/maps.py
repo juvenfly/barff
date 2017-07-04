@@ -1,4 +1,6 @@
 # flake8: noqa
+from datetime import datetime
+
 import numpy as np
 
 PANDAS_TO_ARFF = {
@@ -15,7 +17,7 @@ CSV_TO_PANDAS = {
     },
     'gender': {
         'pandas_dtype': str,
-        'arff_dtype': 'STRING',
+        'arff_dtype': '{M,F}',
     },
     'email': {
         'pandas_dtype': str,
@@ -23,14 +25,34 @@ CSV_TO_PANDAS = {
     },
     'phone': {
         'pandas_dtype': str,
-        'arff_dtype': 'STRING',
+        'arff_dtype': 'NUMERIC',
     },
     'is_cool': {
         'pandas_dtype': np.bool,
-        'arff_dtype': 'CLASS',
+        'arff_dtype': '{TRUE,FALSE}',
     },
     'birthday': {
         'pandas_dtype': str,
-        'arff_dtype': 'STRING',
+        'arff_dtype': 'DATE "yyyy-MM-dd"',
+    },
+}
+
+ARFF_FIELD_MAPS = {
+    'falsey':   [0, '0', 'f', 'false', 'n', 'no'],
+    'truthy':   [1, '1', 't', 'true', 'y', 'yes'],
+    'none':     [None, 'none', 'null', 'nan', '?'],
+}
+
+ARFF_DATA_TYPES = {
+    'builtins': {
+        (str, unicode, ):   'STRING',
+        (int, long, ):      'NUMERIC',
+        (float, ):          'REAL',
+        (datetime, ):       'DATE',
+    },
+    'np_dtypes': {
+        (np.int, ):     'NUMERIC',
+        (np.float, ):   'REAL',
+        (np.bool, ):    '<nominal-specification',
     },
 }

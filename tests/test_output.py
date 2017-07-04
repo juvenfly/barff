@@ -19,12 +19,12 @@ class TestCsvToArffConverter(TestCase):
         )
         self.data_frame = self.arff_converter.data_frame
 
-    @patch('barff.models.ArffConverter.map_column_to_arff_class')
+    @patch('barff.models.ToArffConverter.map_column_to_arff_class')
     def test_map_data_types(self, MockMeth):
         mock_meth = MockMeth()
         special_cases = ['bool']
         for case in special_cases:
-            result = self.arff_converter.map_data_types(case, 'test_column')
+            self.arff_converter.map_data_types(case, 'is_cool')
             mock_meth.assert_called
 
     def test_quote_if_space(self):

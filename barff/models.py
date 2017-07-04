@@ -7,13 +7,13 @@ from builtins import input
 import pandas as pd
 
 from barff.exceptions import ValidationError
-from barff.maps import PANDAS_TO_ARFF
+from barff.maps import PANDAS_TO_ARFF, ARFF_FIELD_MAPS
 from barff.utils import create_delimited_row, quote_if_space
 
 
-class ArffConverter(object):
+class ToArffConverter(object):
 
-    def __init__(self, input_file, output_file, relation=None, field_map=None):
+    def __init__(self, input_file, output_file, relation=None, field_map=None, validate=False):
         """
         Initialize instance variables
         :param input_file: path to input file as str
@@ -26,8 +26,13 @@ class ArffConverter(object):
         self.output_file = open(output_file, 'w+')
         self.relation = relation if relation else 'undefined relation'
         self.field_map = field_map
+        self.validate = validate
 
     def main(self):
+        """
+        Main method for base ArffConverter class. Several helper methods must be defined by
+        child classes.
+        """
         self.create_data_frame()
 
         self.collect_comments()
@@ -46,6 +51,10 @@ class ArffConverter(object):
 
         self.output_file.close()
 
+        if self.validate:
+            validator = ArffValidator(input_file=self.input_file, arff_file=self.output_file)
+            validator.validate()
+
     def map_column_to_arff_class(self, column):
         """
         Converts 'bool' data type to arff format
@@ -58,7 +67,7 @@ class ArffConverter(object):
         return result
 
 
-class CsvToArffConverter(ArffConverter):
+class CsvToArffConverter(ToArffConverter):
 
     def collect_comments(self):
         """
@@ -129,13 +138,41 @@ class CsvToArffConverter(ArffConverter):
         self.data_frame = pd.read_csv(self.input_file, dtype=pd_field_map)
 
 
-class ArffToCsvConverter(ArffConverter):
+class FromArffConverter(object):
+
+    def __init__(self, input_file, output_file, comment_file=None, validate=False):
+        self.input_file = input_file
+        self.output_file = open(output_file, 'w+')
+        self.comment_file = None
+        self.validate = validate
+        self.data_frame = None
 
     def main(self):
-        self.create_data_frame()
-        self.data_frame.to_csv(self.output_file, index=False, quoting=csv.QUOTE_NONE, escapechar='\\')
+        self.process_header()
 
-    def convert_header(self):
+        self.data_frame = self.create_data_frame()
+        self.data_frame.to_csv(self.output_file, index=False, quoteing=csv.QUOTE_NONE, escapechar='\\')
+
+        if self.validate:
+            validator = ArffValidator(input_file=self.output_file, arff_file=self.input_file)
+            validator.validate()
+
+    def export_comments(self):
+        arff_file = open(self.input_file, 'rU')
+        comment_file = open(self.comment_file, 'w+')
+        for line in arff_file:
+            if not line.startswith('%'):
+                return
+            comment_file.write(line)
+        comment_file.close()
+        arff_file.close()
+
+
+class ArffToCsvConverter(FromArffConverter):
+
+    def process_header(self):
+        if self.comment_file:
+            self.export_comments()
         csv_header = []
         arff_file = open(self.input_file, 'rU')
         for line in arff_file:
@@ -148,7 +185,7 @@ class ArffToCsvConverter(ArffConverter):
         return csv_header
 
     def create_data_frame(self):
-        header = self.convert_header()
+        header = self.process_header()
         arff_data = open(self.input_file, 'rU')
         while True:
             line = arff_data.next()
@@ -177,21 +214,54 @@ class ArffValidator(object):
         self.file_extension = os.path.splitext(input_file)[1].lower()
 
     def prepare_files(self):
-
+        """
+        Skips headers so that validate can begin comparing files at each file's first line of data.
+        """
         for line in self.arff_file:
-            if not line.startswith('@DATA'):
-                self.arff_file.readline()
+            if line.startswith('@DATA'):
+                break
 
         if self.file_extension == '.csv':
             self.input_file.next()
 
     def validate(self):
+        """
+        Main process for ArffValidator. Compares each file, line by line.
+        :return: Returns True if no ValidationError is raised in the compare_values step
+        """
+        # TODO: Add header validation.
+        self.prepare_files()
         for line in self.input_file:
-            arff_line = self.arff_file.readline()
-            if line != arff_line:
-                msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
-                raise ValidationError(msg)
-        sys.stdout('Validation complete. Files match.')
+            line = line.split(',')
+            arff_line = self.arff_file.next().split(',')
+            compare_values(line, arff_line)
+        sys.stdout.write('Validation complete. Files match.')
 
         self.arff_file.close()
         self.input_file.close()
+
+        return True
+
+
+def compare_values(line, arff_line):
+    """
+    Compares entries in lines from the input & output files and raises a ValidationError on mismatch
+    :param line: line from input file split into a list of entries
+    :param arff_line: line from output file split into a list of entries
+    """
+    msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
+    for i, entry in enumerate(line):
+        print(entry, arff_line[i])
+
+        # should match, but doesn't
+        if entry != arff_line[i]:
+            if ' ' in entry and quote_if_space(entry) != arff_line[i]:
+                raise ValidationError(msg)
+
+        # shouldn't match, but does
+        if entry == arff_line[i]:
+            if ' ' in arff_line[i] and quote_if_space(entry) != arff_line[i]:
+                raise ValidationError(msg)
+
+            if entry in ARFF_FIELD_MAPS['none'] and arff_line[i] != '?':
+                raise ValidationError(msg)
