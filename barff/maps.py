@@ -45,14 +45,14 @@ ARFF_FIELD_MAPS = {
 
 ARFF_DATA_TYPES = {
     'builtins': {
-        (str, unicode, ): 'STRING',
-        (int, long, ): 'NUMERIC',
-        (float, ): 'REAL',
-        (datetime, ): 'DATE',
+        (str, unicode, ):   'STRING',
+        (int, long, ):      'NUMERIC',
+        (float, ):          'REAL',
+        (datetime, ):       'DATE',
     },
     'np_dtypes': {
-        (np.int, ): 'NUMERIC',
-        (np.float, ): 'REAL',
-        (np.bool, ): '<nominal-specification',
+        (np.int, ):     'NUMERIC',
+        (np.float, ):   'REAL',
+        (np.bool, ):    '<nominal-specification',
     },
 }
