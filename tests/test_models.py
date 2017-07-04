@@ -1,10 +1,11 @@
 import os
-from mock import MagicMock
+from mock import MagicMock, patch
 from unittest import TestCase
 
 import pandas as pd
 
-from barff.models import ToArffConverter, ArffValidator, compare_values
+from barff.maps import CSV_TO_PANDAS
+from barff.models import ToArffConverter, CsvToArffConverter, ArffValidator, compare_values
 from barff.exceptions import ValidationError
 
 
@@ -52,10 +53,35 @@ class TestToArffConverter(TestCase):
             self.assertEqual(result, expected_result)
 
 
+class TestCsvToArffConverter(TestCase):
+
+    def setUp(self):
+        self.converter = CsvToArffConverter(
+            input_file='./tests/test_input.csv',
+            output_file='./tmp/test_output.arff',
+            field_map=CSV_TO_PANDAS,
+        )
+
+    def tearDown(self):
+        os.remove(self.converter.output_file.name)
+        self.converter = None
+
+    def test_convert_header(self):
+        self.converter.create_data_frame()
+        with open('./tests/expected_output.arff', 'rU') as expected_output:
+            expected_header = [line for line in expected_output if line.startswith('@ATTRIBUTE')]
+
+        header = self.converter.convert_header()
+        self.assertEqual(header, expected_header)
+
+
 class TestArffValidator(TestCase):
 
     def setUp(self):
-        self.validator = ArffValidator(arff_file='./tests/expected_output.arff', input_file='./tests/test_input.csv')
+        self.validator = ArffValidator(
+            arff_file='./tests/expected_output.arff',
+            input_file='./tests/test_input.csv'
+        )
 
     def tearDown(self):
         self.validator = None
