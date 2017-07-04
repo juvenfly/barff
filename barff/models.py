@@ -253,12 +253,12 @@ def compare_values(line, arff_line):
     for i, entry in enumerate(line):
         print(entry, arff_line[i])
 
-        # negative cases
+        # should match, but doesn't
         if entry != arff_line[i]:
             if ' ' in entry and quote_if_space(entry) != arff_line[i]:
                 raise ValidationError(msg)
 
-        # false positives
+        # shouldn't match, but does
         if entry == arff_line[i]:
             if ' ' in arff_line[i] and quote_if_space(entry) != arff_line[i]:
                 raise ValidationError(msg)
