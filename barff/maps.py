@@ -34,3 +34,10 @@ CSV_TO_PANDAS = {
         'arff_dtype': 'STRING',
     },
 }
+
+ARFF_FIELD_MAPS = {
+    'contains_space': r'.*\s.*',
+    'falsey':   [0, '0', 'f', 'false', 'n', 'no'],
+    'truthy':   [1, '1', 't', 'true', 'y', 'yes'],
+    'none':     [None, 'none', 'null', 'nan', '?'],
+}
