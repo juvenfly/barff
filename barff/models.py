@@ -1,6 +1,5 @@
 import csv
 import os
-import re
 import shlex
 import sys
 from builtins import input
