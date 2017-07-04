@@ -5,7 +5,13 @@ from unittest import TestCase
 import pandas as pd
 
 from barff.maps import CSV_TO_PANDAS
-from barff.models import ToArffConverter, CsvToArffConverter, ArffValidator, compare_values
+from barff.models import (
+    ToArffConverter,
+    FromArffConverter,
+    CsvToArffConverter,
+    ArffValidator,
+    compare_values
+)
 from barff.exceptions import ValidationError
 
 
@@ -73,6 +79,33 @@ class TestCsvToArffConverter(TestCase):
 
         header = self.converter.convert_header()
         self.assertEqual(header, expected_header)
+
+
+class TestFromArffConverter(TestCase):
+
+    def setUp(self):
+        self.converter = FromArffConverter(
+            input_file='./tests/expected_output.arff',
+            output_file='./tmp/csv_output.csv',
+        )
+
+    def tearDown(self):
+        os.remove(self.converter.output_file.name)
+        self.converter = None
+
+    def test_instance_vars(self):
+        self.assertEqual(self.converter.input_file, './tests/expected_output.arff'),
+        self.assertTrue(os.path.samefile(self.converter.output_file.name, './tmp/csv_output.csv'))
+        self.assertIsNone(self.converter.comment_file)
+        self.assertFalse(self.converter.validate)
+
+    def test_main(self):
+        self.converter.process_header = MagicMock()
+        self.converter.create_data_frame = MagicMock()
+
+        self.converter.main()
+        self.converter.process_header.assert_called()
+        self.converter.create_data_frame.assert_called()
 
 
 class TestArffValidator(TestCase):
