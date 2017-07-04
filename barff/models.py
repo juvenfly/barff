@@ -249,6 +249,7 @@ def compare_values(line, arff_line):
     :param line: line from input file split into a list of entries
     :param arff_line: line from output file split into a list of entries
     """
+    # TODO: How do I keep this from turning into one big switch statement or if, elif nightmare?
     msg = 'Line mismatch between input:\n{}\nand ARFF output:\n{}'.format(line, arff_line)
     for i, entry in enumerate(line):
         print(entry, arff_line[i])

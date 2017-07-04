@@ -11,3 +11,7 @@ type:
 ### Sample Usage
 
 See example.py
+
+### Compatibility
+
+Built and tested in Python 2.7. Module itself appears to run on 3 but the tests are broken, so...be warned.

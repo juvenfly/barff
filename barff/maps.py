@@ -44,9 +44,10 @@ ARFF_FIELD_MAPS = {
 }
 
 ARFF_DATA_TYPES = {
+    # TODO long and unicode break python3, figure out how to handle this.
     'builtins': {
-        (str, unicode, ):   'STRING',
-        (int, long, ):      'NUMERIC',
+        (str, ):   'STRING',
+        (int, ):      'NUMERIC',
         (float, ):          'REAL',
         (datetime, ):       'DATE',
     },
