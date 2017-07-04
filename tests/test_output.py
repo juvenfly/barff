@@ -24,7 +24,7 @@ class TestCsvToArffConverter(TestCase):
         mock_meth = MockMeth()
         special_cases = ['bool']
         for case in special_cases:
-            result = self.arff_converter.map_data_types(case, 'is_cool')
+            self.arff_converter.map_data_types(case, 'is_cool')
             mock_meth.assert_called
 
     def test_quote_if_space(self):
