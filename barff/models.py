@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 import shlex
 import sys
 from builtins import input
@@ -7,7 +8,7 @@ from builtins import input
 import pandas as pd
 
 from barff.exceptions import ValidationError
-from barff.maps import PANDAS_TO_ARFF
+from barff.maps import PANDAS_TO_ARFF, ARFF_FIELD_MAPS
 from barff.utils import create_delimited_row, quote_if_space
 
 
@@ -261,4 +262,7 @@ def compare_values(line, arff_line):
         # shouldn't match, but does
         if entry == arff_line[i]:
             if ' ' in arff_line[i] and quote_if_space(entry) != arff_line[i]:
+                raise ValidationError(msg)
+
+            if entry in ARFF_FIELD_MAPS['none'] and arff_line[i] != '?':
                 raise ValidationError(msg)
