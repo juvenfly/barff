@@ -1,8 +1,54 @@
 import os
+from mock import MagicMock
 from unittest import TestCase
 
-from barff.models import ArffValidator, compare_values
+import pandas as pd
+
+from barff.models import ToArffConverter, ArffValidator, compare_values
 from barff.exceptions import ValidationError
+
+
+class TestToArffConverter(TestCase):
+
+    def setUp(self):
+        self.converter = ToArffConverter(
+            input_file='./tests/test_input.csv',
+            output_file='./tmp/test_output.arff',
+        )
+
+    def tearDown(self):
+        self.converter = None
+
+    def test_instance_vars(self):
+        self.assertTrue(os.path.samefile(self.converter.input_file, './tests/test_input.csv'))
+        self.assertTrue(os.path.samefile(self.converter.output_file.name, './tmp/test_output.arff'))
+        self.assertEqual(self.converter.relation, 'undefined relation')
+        self.assertIsNone(self.converter.field_map)
+        self.assertFalse(self.converter.validate)
+
+    def test_main(self):
+        self.converter.create_data_frame = MagicMock()
+        self.converter.collect_comments = MagicMock()
+        self.converter.convert_header = MagicMock()
+        self.converter.output_rows = MagicMock()
+
+        self.converter.main()
+        self.converter.create_data_frame.assert_called()
+        self.converter.collect_comments.assert_called()
+        self.converter.convert_header.assert_called()
+        self.converter.output_rows.assert_called()
+
+    def test_column_to_arff_class(self):
+        # TODO: Add more class test cases to test_input.csv
+        self.converter.data_frame = pd.DataFrame(['M', 'F', 'F', 'M'], columns=['gender'])
+        outcomes = {
+            'gender': '{M,F}',
+        }
+
+        for column in outcomes:
+            expected_result = outcomes[column]
+            result = self.converter.map_column_to_arff_class(column)
+            self.assertEqual(result, expected_result)
 
 
 class TestArffValidator(TestCase):
