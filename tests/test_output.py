@@ -19,7 +19,7 @@ class TestCsvToArffConverter(TestCase):
         )
         self.data_frame = self.arff_converter.data_frame
 
-    @patch('barff.models.ArffConverter.map_column_to_arff_class')
+    @patch('barff.models.ToArffConverter.map_column_to_arff_class')
     def test_map_data_types(self, MockMeth):
         mock_meth = MockMeth()
         special_cases = ['bool']
