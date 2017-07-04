@@ -11,7 +11,7 @@ field_map = {
     },
     'gender': {
         'pandas_dtype': str,
-        'arff_dtype': 'STRING',
+        'arff_dtype': '{M,F}',
     },
     'email': {
         'pandas_dtype': str,
@@ -19,15 +19,15 @@ field_map = {
     },
     'phone': {
         'pandas_dtype': str,
-        'arff_dtype': 'STRING',
+        'arff_dtype': 'NUMERIC',
     },
     'is_cool': {
         'pandas_dtype': np.bool,
-        'arff_dtype': 'CLASS',
+        'arff_dtype': '{TRUE,FALSE}',
     },
     'birthday': {
         'pandas_dtype': str,
-        'arff_dtype': 'STRING',
+        'arff_dtype': 'DATE "yyyy-MM-dd"',
     },
 }
 
