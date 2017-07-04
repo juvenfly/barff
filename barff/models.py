@@ -11,9 +11,9 @@ from barff.maps import PANDAS_TO_ARFF
 from barff.utils import create_delimited_row, quote_if_space
 
 
-class ArffConverter(object):
+class ToArffConverter(object):
 
-    def __init__(self, input_file, output_file, relation=None, field_map=None):
+    def __init__(self, input_file, output_file, relation=None, field_map=None, validate=False):
         """
         Initialize instance variables
         :param input_file: path to input file as str
@@ -26,6 +26,7 @@ class ArffConverter(object):
         self.output_file = open(output_file, 'w+')
         self.relation = relation if relation else 'undefined relation'
         self.field_map = field_map
+        self.validate = validate
 
     def main(self):
         """
@@ -50,6 +51,10 @@ class ArffConverter(object):
 
         self.output_file.close()
 
+        if self.validate:
+            validator = ArffValidator(input_file=self.input_file, arff_file=self.output_file)
+            validator.validate()
+
     def map_column_to_arff_class(self, column):
         """
         Converts 'bool' data type to arff format
@@ -62,7 +67,7 @@ class ArffConverter(object):
         return result
 
 
-class CsvToArffConverter(ArffConverter):
+class CsvToArffConverter(ToArffConverter):
 
     def collect_comments(self):
         """
@@ -133,13 +138,41 @@ class CsvToArffConverter(ArffConverter):
         self.data_frame = pd.read_csv(self.input_file, dtype=pd_field_map)
 
 
-class ArffToCsvConverter(ArffConverter):
+class FromArffConverter(object):
+
+    def __init__(self, input_file, output_file, comment_file=None, validate=False):
+        self.input_file = input_file
+        self.output_file = open(output_file, 'w+')
+        self.comment_file = None
+        self.validate = validate
+        self.data_frame = None
 
     def main(self):
-        self.create_data_frame()
-        self.data_frame.to_csv(self.output_file, index=False, quoting=csv.QUOTE_NONE, escapechar='\\')
+        self.process_header()
 
-    def convert_header(self):
+        self.data_frame = self.create_data_frame()
+        self.data_frame.to_csv(self.output_file, index=False, quoteing=csv.QUOTE_NONE, escapechar='\\')
+
+        if self.validate:
+            validator = ArffValidator(input_file=self.output_file, arff_file=self.input_file)
+            validator.validate()
+
+    def export_comments(self):
+        arff_file = open(self.input_file, 'rU')
+        comment_file = open(self.comment_file, 'w+')
+        for line in arff_file:
+            if not line.startswith('%'):
+                return
+            comment_file.write(line)
+        comment_file.close()
+        arff_file.close()
+
+
+class ArffToCsvConverter(FromArffConverter):
+
+    def process_header(self):
+        if self.comment_file:
+            self.export_comments()
         csv_header = []
         arff_file = open(self.input_file, 'rU')
         for line in arff_file:
@@ -152,7 +185,7 @@ class ArffToCsvConverter(ArffConverter):
         return csv_header
 
     def create_data_frame(self):
-        header = self.convert_header()
+        header = self.process_header()
         arff_data = open(self.input_file, 'rU')
         while True:
             line = arff_data.next()
